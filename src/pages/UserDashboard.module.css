@@ -1,0 +1,10 @@
+.wrap { max-width: 1000px; margin: 0 auto; padding: 18px 20px; color: #e5e7eb; }
+.card {
+  margin-top: 12px; background: #0f1720; border: 1px solid #1f2937; border-radius: 16px; padding: 14px;
+}
+.row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 10px 0;
+  border-bottom: 1px dashed #1f2730;
+}
+.row:last-child { border-bottom: none; }
+.empty { color: #94a3b8; padding: 10px 0; }

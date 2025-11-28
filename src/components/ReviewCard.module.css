@@ -1,0 +1,12 @@
+.card {
+  background: #0f1720;
+  border: 1px solid #1f2937;
+  border-radius: 14px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+.header { display: flex; justify-content: space-between; align-items: center; }
+.stars { color: #fbbf24; letter-spacing: 2px; }
+.by { color: #93c5fd; font-size: 12px; }
+.comment { color: #e5e7eb; margin: 0; font-size: 14px; line-height: 1.4; }

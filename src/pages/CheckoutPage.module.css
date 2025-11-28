@@ -1,0 +1,11 @@
+.wrap { max-width: 800px; margin: 0 auto; padding: 18px 20px; color: #e5e7eb; }
+.card {
+  margin-top: 12px; background: #0f1720; border: 1px solid #1f2937; border-radius: 16px; padding: 14px;
+  display: grid; gap: 12px;
+}
+.row { display: grid; gap: 6px; }
+label { color: #a5b4fc; font-size: 13px; }
+input {
+  background: #0b1220; border: 1px solid #1f2730; border-radius: 10px; padding: 10px 12px; color: #e5e7eb;
+}
+.note { color: #94a3b8; }

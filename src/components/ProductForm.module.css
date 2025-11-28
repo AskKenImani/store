@@ -1,0 +1,33 @@
+.form {
+  background: #0b0f14;
+  border: 1px solid #1f2730;
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+.row { display: grid; gap: 6px; width: 80% }
+label { color: #a5b4fc; font-size: 13px; }
+input, textarea {
+  background: #0f1720;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #e5e7eb;
+  outline: none;
+}
+textarea { min-height: 90px; resize: vertical; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid2 input { width: 50%; }
+.submit {
+  justify-self: start;
+  background: #22c55e;
+  border: none;
+  padding: 10px 14px;
+  color: #00130a;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.help { color: #94a3b8; }
+@media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }

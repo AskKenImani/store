@@ -1,0 +1,27 @@
+.form {
+  background: #0b0f14;
+  border: 1px solid #1f2730;
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+}
+.row { display: grid; gap: 6px; }
+label { color: #a5b4fc; font-size: 13px; }
+input {
+  background: #0f1720;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #e5e7eb;
+}
+.btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
