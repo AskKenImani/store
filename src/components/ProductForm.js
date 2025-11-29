@@ -26,18 +26,30 @@ export default function ProductForm({ onSuccess, initial = null, token }) {
 
   // Handle image file selection + upload to Cloudinary
   const onFileChange = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
+    const MAX_MB = 8;
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError("Unsupported file type. Use JPG/PNG/WEBP/GIF.");
+      return;
+    }
+    if (file.size > MAX_MB * 1024 * 1024) {
+      setUploadError(`File too large. Max ${MAX_MB} MB.`);
+      return;
+    }
+
     if (!CLOUD_NAME || !UPLOAD_PRESET) {
-      alert("Cloudinary config missing. Please set REACT_APP_CLOUDINARY_CLOUD_NAME and REACT_APP_CLOUDINARY_UPLOAD_PRESET.");
+      setUploadError("Cloudinary config missing (cloud name or upload preset).");
+      console.error("CLOUD_NAME:", CLOUD_NAME, "UPLOAD_PRESET:", UPLOAD_PRESET);
       return;
     }
 
     setUploading(true);
     setUploadError("");
 
-    try{
+    try {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", UPLOAD_PRESET);
@@ -46,13 +58,19 @@ export default function ProductForm({ onSuccess, initial = null, token }) {
 
       const { data } = await axios.post(uploadUrl, formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        timeout: 60000,
       });
 
-      // Cloudinary returns `secure_url`
       setForm((prev) => ({ ...prev, imageUrl: data.secure_url }));
     } catch (err) {
-      console.error(err);
-      setUploadError("Failed to upload image. Please try again.");
+      console.error("Cloudinary upload error:", err);
+      if (err?.response?.data) {
+        setUploadError(
+          err.response.data.error?.message || "Upload failed: " + JSON.stringify(err.response.data)
+        );
+      } else {
+        setUploadError(err.message || "Upload failed");
+      }
     } finally {
       setUploading(false);
     }
@@ -133,7 +151,6 @@ export default function ProductForm({ onSuccess, initial = null, token }) {
       <div className={styles.row}>
         <label>Product Image</label>
 
-        {/* Hidden file input */}
         <input
           type="file"
           accept="image/*"
@@ -142,7 +159,6 @@ export default function ProductForm({ onSuccess, initial = null, token }) {
           onChange={onFileChange}
         />
 
-        {/* Visible button to trigger file picker */}
         <button
           type="button"
           className={styles.uploadButton}
@@ -153,23 +169,34 @@ export default function ProductForm({ onSuccess, initial = null, token }) {
         </button>
 
         {form.imageUrl && !uploading && (
-          <small className={styles.help}>
-            Image selected:
+          <div className={styles.imagePreview}>
+            <small>Image selected:</small>
             <br />
             <a href={form.imageUrl} target="_blank" rel="noreferrer">
               {form.imageUrl}
             </a>
-          </small>
+            <br />
+            <img
+              src={form.imageUrl}
+              alt="Preview"
+              style={{
+                marginTop: "5px",
+                maxWidth: "150px",
+                maxHeight: "150px",
+                borderRadius: "5px",
+              }}
+            />
+          </div>
         )}
 
-        {uploadError && (
-          <small className={styles.error}>
-            {uploadError}
-          </small>
-        )}
+        {uploadError && <small className={styles.error}>{uploadError}</small>}
       </div>
 
-      <button className={styles.submit} type="submit" disabled={loading || uploading}>
+      <button
+        className={styles.submit}
+        type="submit"
+        disabled={loading || uploading}
+      >
         {loading
           ? "Saving..."
           : initial?._id
