@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import styles from "./ProductForm.module.css";
 import axios from "axios";
 
@@ -6,7 +6,7 @@ const API = process.env.REACT_APP_API_URL;
 const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
 
-export default function ProductForm({ onSuccess, initial = null, token }) {
+export default function ProductForm({ onSuccess, initial = null, token, onCancel }) {
   const [form, setForm] = useState({
     name: initial?.name || "",
     description: initial?.description || "",
@@ -14,6 +14,17 @@ export default function ProductForm({ onSuccess, initial = null, token }) {
     category: initial?.category || "",
     imageUrl: initial?.imageUrl || "",
   });
+
+  // keep in sync if parent changes `initial` (when switching edit targets)
+  useEffect(() => {
+    setForm({
+      name: initial?.name || "",
+      description: initial?.description || "",
+      price: initial?.price || "",
+      category: initial?.category || "",
+      imageUrl: initial?.imageUrl || "",
+    });
+  }, [initial]);
 
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -87,12 +98,38 @@ export default function ProductForm({ onSuccess, initial = null, token }) {
       };
 
       if (initial?._id) {
+        // Update existing product
         await axios.put(`${API}/products/${initial._id}`, payload, { headers });
       } else {
+        // Create new product
         await axios.post(`${API}/products/add`, payload, { headers });
       }
 
       onSuccess && onSuccess();
+
+      // Reset form only when creating; when updating, we'll let parent control edit state
+      if (!initial?._id) {
+        setForm({
+          name: "",
+          description: "",
+          price: "",
+          category: "",
+          imageUrl: "",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err?.response?.data?.message || "Failed to save product");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    // If parent passed onCancel, call it so they can clear `initial` and hide or reset edit UI
+    if (onCancel) onCancel();
+    else {
+      // fallback: reset form to blank
       setForm({
         name: "",
         description: "",
@@ -100,11 +137,6 @@ export default function ProductForm({ onSuccess, initial = null, token }) {
         category: "",
         imageUrl: "",
       });
-    } catch (err) {
-      console.error(err);
-      alert(err?.response?.data?.message || "Failed to save product");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -192,17 +224,41 @@ export default function ProductForm({ onSuccess, initial = null, token }) {
         {uploadError && <small className={styles.error}>{uploadError}</small>}
       </div>
 
-      <button
-        className={styles.submit}
-        type="submit"
-        disabled={loading || uploading}
-      >
-        {loading
-          ? "Saving..."
-          : initial?._id
-          ? "Update Product"
-          : "Create Product"}
-      </button>
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        {/* Primary action (Create or Update) */}
+        <button
+          className={styles.submit}
+          type="submit"
+          disabled={loading || uploading}
+        >
+          {loading
+            ? initial?._id
+              ? "Updating..."
+              : "Saving..."
+            : initial?._id
+            ? "Update Product"
+            : "Create Product"}
+        </button>
+
+        {/* When editing, show a Cancel button so admin can exit edit mode quickly */}
+        {initial?._id && (
+          <button
+            type="button"
+            onClick={handleCancel}
+            className={styles.ghost || styles.cancelButton}
+            disabled={loading || uploading}
+            style={{
+              background: "transparent",
+              border: "1px solid var(--border)",
+              padding: "8px 12px",
+              borderRadius: 6,
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }

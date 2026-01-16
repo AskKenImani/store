@@ -36,3 +36,54 @@ input {
   cursor: pointer;
   font-weight: 700;
 }
+.subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.passwordWrap {
+  position: relative;
+}
+
+.passwordWrap input {
+  width: 88%;
+  padding-right: 40px;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #555;
+}
+
+.eyeBtn:hover {
+  color: #000;
+}
+
+.switchAuth {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.switchAuth1 {
+  margin-top: 0px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.switchAuth a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.switchAuth a:hover {
+  text-decoration: underline;
+}
