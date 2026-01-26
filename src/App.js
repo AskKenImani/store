@@ -12,6 +12,7 @@ import ManagerDashboard from './pages/ManagerDashboard';
 import CheckoutPage from './pages/CheckoutPage';
 import Navbar from './components/Navbar';
 
+
 function App() {
   return (
     <Router>
