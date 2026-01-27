@@ -54,6 +54,24 @@ export default function AdminDashboard() {
     }
   };
 
+  const resolveOrder = async (id) => {
+    if (!window.confirm("Resolve this pending order?")) return;
+    await axios.patch(`${API}/orders/${id}/resolve`, {}, { headers: authHeaders });
+    loadAll();
+  };
+
+  const deleteOrder = async (id) => {
+    if (!window.confirm("Delete this order?")) return;
+    await axios.delete(`${API}/orders/${id}`, { headers: authHeaders });
+    loadAll();
+  };
+
+  const deleteUser = async (id) => {
+    if (!window.confirm("Delete this user?")) return;
+    await axios.delete(`${API}/users/${id}`, { headers: authHeaders });
+    loadAll();
+  };
+
   const changeRole = async (userId, newRole) => {
     if (!window.confirm(`Change role to "${newRole}"?`)) return;
     try {
@@ -118,65 +136,48 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Orders section */}
-      <div className={styles.section}>
-        <h3>All Orders</h3>
-        <div className={styles.list}>
-          {!orders.length && (
-            <div className={styles.empty}>No orders yet.</div>
-          )}
-          {orders.map((o) => (
-            <div key={o._id} className={styles.itemRow}>
-              <div>
-                <strong>Order ID:</strong> {o._id}
-              </div>
-              <div>
-                <strong>Total:</strong> ₦
-                {Number(o.totalAmount).toLocaleString()}
-              </div>
-              <div>
-                <strong>Status:</strong> {o.paymentStatus}
-              </div>
-              <div>
-                <strong>User:</strong>{" "}
-                {o.user
-                  ? `${o.user.name} (${o.user.email}) [${o.user.role}]`
-                  : "N/A"}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* ORDERS */}
+      <h3>Orders</h3>
+      {orders.map((o) => {
+        const isPending = o.paymentStatus === "pending";
+        return (
+          <div key={o._id} className={styles.itemRow}>
+            <div>₦{o.totalAmount.toLocaleString()}</div>
+            <div>Status: {o.paymentStatus}</div>
+            <div>User: {o.user?.email}</div>
 
-      {/* Users & roles section */}
-      <div className={styles.section}>
-        <h3>Users & Roles</h3>
-        <div className={styles.list}>
-          {!users.length && (
-            <div className={styles.empty}>No users registered yet.</div>
-          )}
-          {users.map((u) => (
-            <div key={u._id} className={styles.itemRow}>
-              <div>
-                <strong>{u.name}</strong> ({u.email})
-              </div>
-              <div>
-                Current role: <strong>{u.role}</strong>
-              </div>
-              <div>
-                <select
-                  value={u.role}
-                  onChange={(e) => changeRole(u._id, e.target.value)}
-                >
-                  <option value="user">User</option>
-                  <option value="manager">Manager</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-            </div>
-          ))}
+            {isPending && (
+              <button onClick={() => resolveOrder(o._id)}>
+                Resolve
+              </button>
+            )}
+
+            <button onClick={() => deleteOrder(o._id)} className={styles.del}>
+              Delete
+            </button>
+          </div>
+        );
+      })}
+
+      {/* USERS */}
+      <h3>Users</h3>
+      {users.map((u) => (
+        <div key={u._id} className={styles.itemRow}>
+          <div>{u.email}</div>
+          <select
+            value={u.role}
+            onChange={(e) => changeRole(u._id, e.target.value)}
+          >
+            <option value="user">User</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button onClick={() => deleteUser(u._id)} className={styles.del}>
+            Delete
+          </button>
         </div>
-      </div>
+      ))}
     </div>
+    // </div>
   );
 }
