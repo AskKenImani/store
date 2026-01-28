@@ -10,6 +10,7 @@ import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
 import CheckoutPage from './pages/CheckoutPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import Navbar from './components/Navbar';
 
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/manager-dashboard" element={<ManagerDashboard />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/payment-success" element={<PaymentSuccessPage />} />
       </Routes>
     </Router>
   );
