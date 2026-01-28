@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import styles from "./CheckoutPage.module.css";
 import CheckoutForm from "../components/CheckoutForm";
 import axios from "axios";
@@ -11,16 +11,28 @@ export default function CheckoutPage() {
   const { cart, total } = useCart();
   const { token, user } = useAuth();
 
-  const [email, setEmail] = useState(user?.email || "");
+  const [email, setEmail] = useState("");
   const [orderId, setOrderId] = useState(null);
   const [loadingOrder, setLoadingOrder] = useState(false);
 
-  // ✅ Create order once
+  // Prevent duplicate order creation (React StrictMode safe)
+  const orderCreatedRef = useRef(false);
+
+  // Sync email when user loads
+  useEffect(() => {
+    if (user?.email) {
+      setEmail(user.email);
+    }
+  }, [user]);
+
+  // ✅ Create order ONCE
   useEffect(() => {
     if (!token) return;
     if (!cart.length) return;
     if (total <= 0) return;
-    if (orderId) return;
+    if (orderCreatedRef.current) return;
+
+    orderCreatedRef.current = true;
 
     (async () => {
       try {
@@ -38,19 +50,23 @@ export default function CheckoutPage() {
             totalAmount: total,
           },
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
-        setOrderId(data.order?._id);
+        // ✅ MATCHES BACKEND RESPONSE
+        setOrderId(data.orderId);
       } catch (err) {
-        console.error("Order creation failed", err);
-        alert("Failed to create order");
+        console.error("Order creation failed:", err);
+        alert("Failed to create order. Please try again.");
+        orderCreatedRef.current = false; // allow retry
       } finally {
         setLoadingOrder(false);
       }
     })();
-  }, [cart, total, token, orderId]);
+  }, [cart, total, token]);
 
   return (
     <div className={styles.wrap}>
@@ -87,12 +103,11 @@ export default function CheckoutPage() {
 
         {!loadingOrder && !orderId && (
           <div className={styles.note}>
-            {cart.length
-              ? "Creating your order…"
-              : "Your cart is empty."}
+            Creating your order…
           </div>
         )}
 
+        {/* ✅ PAYSTACK BUTTON SHOWS ONLY WHEN ORDER EXISTS */}
         {orderId && (
           <CheckoutForm
             orderId={orderId}

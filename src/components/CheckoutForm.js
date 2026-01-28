@@ -9,19 +9,46 @@ export default function CheckoutForm({ orderId, email, amount }) {
 
   const pay = async (e) => {
     e.preventDefault();
+
+    if (!orderId) {
+      alert("Order not ready. Please refresh the page.");
+      return;
+    }
+
     try {
       setLoading(true);
-      const token = localStorage.getItem("auth_token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const { data } = await axios.post(`${API}/payments/pay`, { amount, orderId, email }, { headers });
+
+      // ✅ make sure this key matches your auth system
+      const token =
+        localStorage.getItem("auth_token") ||
+        localStorage.getItem("token");
+
+      const headers = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+
+      const { data } = await axios.post(
+        `${API}/payments/pay`,
+        {
+          orderId,
+          email,
+          amount: amount * 100, // ✅ CONVERT TO KOBO
+        },
+        { headers }
+      );
+
       if (data?.paymentUrl) {
-        window.location.href = data.paymentUrl; // Paystack authorization_url
+        // ✅ Paystack redirect
+        window.location.href = data.paymentUrl;
       } else {
         alert("Unable to initialize Paystack payment");
       }
     } catch (err) {
-      console.error(err);
-      alert(err?.response?.data?.message || "Payment init failed");
+      console.error("Payment init error:", err);
+      alert(
+        err?.response?.data?.message ||
+          "Payment initialization failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -33,11 +60,16 @@ export default function CheckoutForm({ orderId, email, amount }) {
         <label>Email</label>
         <input value={email} readOnly />
       </div>
+
       <div className={styles.row}>
         <label>Amount (₦)</label>
-        <input value={amount} readOnly />
+        <input value={amount.toLocaleString()} readOnly />
       </div>
-      <button className={styles.btn} disabled={loading}>
+
+      <button
+        className={styles.btn}
+        disabled={loading || !orderId}
+      >
         {loading ? "Redirecting..." : "Pay with Paystack"}
       </button>
     </form>
