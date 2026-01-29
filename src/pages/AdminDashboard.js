@@ -12,11 +12,14 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
   const loadAll = async () => {
     setLoading(true);
+    const reviewsRes = await axios.get(`${API}/reviews`, { headers: authHeaders });
+    setReviews(reviewsRes.data.reviews || []);
     try {
       const [productsRes, ordersRes, usersRes] = await Promise.all([
         axios.get(`${API}/products`), // products may or may not need auth
@@ -40,6 +43,12 @@ export default function AdminDashboard() {
     loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  const deleteReview = async (id) => {
+    if (!window.confirm("Delete this review?")) return;
+    await axios.delete(`${API}/reviews/${id}`, { headers: authHeaders });
+    loadAll();
+  };
 
   const delProduct = async (id) => {
     if (!window.confirm("Delete this product?")) return;
@@ -177,7 +186,21 @@ export default function AdminDashboard() {
           </button>
         </div>
       ))}
+
+      <h3>Reviews</h3>
+      {reviews.map((r) => (
+        <div key={r._id} className={styles.itemRow}>
+          <div>
+            <strong>{r.user?.name}</strong> → {r.product?.name}
+          </div>
+          <div>{r.rating} ★</div>
+          <div>{r.comment}</div>
+          <button onClick={() => deleteReview(r._id)} className={styles.del}>
+            Delete
+          </button>
+        </div>
+      ))}
+      
     </div>
-    // </div>
   );
 }

@@ -1,37 +1,57 @@
 import { useState } from "react";
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
+import styles from "./AddReview.module.css";
 
 const API = process.env.REACT_APP_API_URL;
 
-export default function AddReview({ productId, onSuccess }) {
-  const { token } = useAuth();
+export default function AddReview({ productId, token, onSuccess }) {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const submit = async () => {
-    await axios.post(
-      `${API}/reviews`,
-      { productId, rating, comment },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    onSuccess();
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!comment.trim()) return alert("Please write a comment");
+
+    try {
+      setLoading(true);
+      await axios.post(
+        `${API}/reviews`,
+        { productId, rating, comment },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setComment("");
+      setRating(5);
+      onSuccess(); // reload reviews
+    } catch (err) {
+      alert(err?.response?.data?.message || "Failed to submit review");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
-      <h4>Write a Review</h4>
+    <form onSubmit={submit} className={styles.form}>
+      <h3>Write a Review</h3>
+
+      <label>Rating</label>
       <select value={rating} onChange={(e) => setRating(e.target.value)}>
-        {[5,4,3,2,1].map(n => (
-          <option key={n} value={n}>{n} Stars</option>
+        {[5, 4, 3, 2, 1].map((n) => (
+          <option key={n} value={n}>{n} Star{n > 1 && "s"}</option>
         ))}
       </select>
+
+      <label>Comment</label>
       <textarea
-        placeholder="Your review..."
         value={comment}
         onChange={(e) => setComment(e.target.value)}
+        rows={4}
       />
-      <button onClick={submit}>Submit Review</button>
-    </div>
+
+      <button disabled={loading}>
+        {loading ? "Submitting..." : "Submit Review"}
+      </button>
+    </form>
   );
 }
