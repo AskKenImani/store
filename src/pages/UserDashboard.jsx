@@ -27,7 +27,7 @@ export default function UserDashboard() {
       })
       .then((res) => setOrders(res.data.orders || []))
       .catch(console.error);
-  }, [token]);
+  }, [token, window.location.search]);
 
   // Fetch products
   useEffect(() => {

@@ -28,11 +28,15 @@ export default function ProductPage() {
 
       await loadReviews();
 
-      if (token) {
-        const check = await axios.get(`${API}/reviews/can-review/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setCanReview(check.data.canReview);
+      if (localStorage.getItem("auth_token")) {
+        axios
+          .get(`${API}/orders/has-bought/${id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+            },
+          })
+          .then((res) => setCanReview(res.data.hasBought))
+          .catch(() => setCanReview(false));
       }
     })();
   }, [id, token]);
@@ -59,6 +63,10 @@ export default function ProductPage() {
       )}
 
       <h2>Reviews</h2>
+      {canReview && (
+        <AddReview productId={id} onSuccess={() => window.location.reload()} />
+      )}
+
       <div className={styles.reviews}>
         {reviews.length ? (
           reviews.map((rv) => (

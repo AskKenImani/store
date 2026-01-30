@@ -1,52 +1,42 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 
 const API = process.env.REACT_APP_API_URL;
 
 export default function PaymentSuccessPage() {
-  const [searchParams] = useSearchParams();
+  const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { clearCart } = useCart();
   const { token } = useAuth();
 
-  const [status, setStatus] = useState("Verifying payment...");
-
   useEffect(() => {
-    const reference = searchParams.get("reference");
+    const reference = params.get("reference");
 
     if (!reference) {
-      setStatus("Invalid payment reference");
+      navigate("/user-dashboard");
       return;
     }
 
-    const verifyPayment = async () => {
+    (async () => {
       try {
-        await axios.post(
-          `${API}/payments/verify`,
-          { reference },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setStatus("Payment successful! Redirecting...");
-        setTimeout(() => navigate("/user-dashboard"), 2000);
+        await axios.post(`${API}/payments/verify`, { reference });
+        clearCart(); // ✅ empty cart after success
+        navigate("/user-dashboard?paid=1");
       } catch (err) {
-        console.error(err);
-        setStatus("Payment verification failed");
+        console.error("Verification failed:", err);
+        alert("Payment verification failed. Please contact support.");
+        navigate("/user-dashboard");
       }
-    };
-
-    verifyPayment();
-  }, [searchParams, token, navigate]);
+    })();
+  }, [params, navigate, clearCart]);
 
   return (
     <div style={{ padding: "40px", textAlign: "center" }}>
-      <h2>{status}</h2>
-      <p>Please do not refresh this page.</p>
+      <h2>Verifying payment…</h2>
+      <p>Please wait</p>
     </div>
   );
 }
