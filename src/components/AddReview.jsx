@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import styles from "./AddReview.module.css";
+import styles from "./ReviewCard.module.css";
 
 const API = process.env.REACT_APP_API_URL;
 
