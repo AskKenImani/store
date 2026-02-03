@@ -10,7 +10,7 @@ const API = process.env.REACT_APP_API_URL;
 
 export default function ProductPage() {
   const { id } = useParams();
-  const { token, user } = useAuth();
+  const { token } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -18,7 +18,7 @@ export default function ProductPage() {
   const loadReviews = useCallback(async () => {
     try {
       const res = await axios.get(`${API}/reviews/${id}`);
-      setReviews(res.data || []); // ✅ FIXED
+      setReviews(res.data || []); 
     } catch (err) {
       console.error("Failed to load reviews", err);
     }
