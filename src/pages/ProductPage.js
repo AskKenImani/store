@@ -10,44 +10,37 @@ const API = process.env.REACT_APP_API_URL;
 
 export default function ProductPage() {
   const { id } = useParams();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
-  const [canReview, setCanReview] = useState(false);
 
   const loadReviews = useCallback(async () => {
-    const r = await axios.get(`${API}/reviews/${id}`);
-    setReviews(r.data.reviews || []);
+    try {
+      const res = await axios.get(`${API}/reviews/${id}`);
+      setReviews(res.data || []); // ✅ FIXED
+    } catch (err) {
+      console.error("Failed to load reviews", err);
+    }
   }, [id]);
 
   useEffect(() => {
-    const loadProductData = async () => {
+    const loadProduct = async () => {
       try {
-        const p = await axios.get(`${API}/products/${id}`);
-        setProduct(p.data.product);
-
+        const res = await axios.get(`${API}/products/${id}`);
+        setProduct(res.data.product);
         await loadReviews();
-
-        const authToken = localStorage.getItem("auth_token");
-        if (authToken) {
-          const res = await axios.get(`${API}/orders/has-bought/${id}`, {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          });
-          setCanReview(res.data.hasBought);
-        }
       } catch (err) {
-        console.error(err);
-        setCanReview(false);
+        console.error("Failed to load product", err);
       }
     };
 
-    loadProductData();
+    loadProduct();
   }, [id, loadReviews]);
 
-  if (!product) return <div className={styles.loading}>Loading...</div>;
+  if (!product) {
+    return <div className={styles.loading}>Loading...</div>;
+  }
 
   return (
     <div className={styles.wrap}>
@@ -57,6 +50,7 @@ export default function ProductPage() {
           alt={product.name}
           className={styles.img}
         />
+
         <div className={styles.info}>
           <h1>{product.name}</h1>
           <p>{product.description}</p>
@@ -64,7 +58,8 @@ export default function ProductPage() {
         </div>
       </div>
 
-      {canReview && (
+      {/* ✅ REVIEW FORM (backend enforces purchase check) */}
+      {token && (
         <AddReview
           productId={id}
           token={token}
