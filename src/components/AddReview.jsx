@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import styles from "./ReviewCard.module.css";
 
 const API = process.env.REACT_APP_API_URL;
 
@@ -8,37 +7,70 @@ export default function AddReview({ productId, token, onSuccess }) {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const submit = async (e) => {
+  const submitReview = async (e) => {
     e.preventDefault();
-    if (!comment.trim()) return alert("Please write a comment");
+    setError("");
 
     try {
       setLoading(true);
+
       await axios.post(
         `${API}/reviews`,
-        { productId, rating, comment },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          productId,
+          rating,
+          comment,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       setComment("");
       setRating(5);
       onSuccess(); // reload reviews
     } catch (err) {
-      alert(err?.response?.data?.message || "Failed to submit review");
+      setError(
+        err?.response?.data?.message ||
+          "You must purchase this product to review it"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={submit} className={styles.form}>
+    <form
+      onSubmit={submitReview}
+      style={{
+        margin: "20px 0",
+        padding: "15px",
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+      }}
+    >
       <h3>Write a Review</h3>
 
+      {error && (
+        <div style={{ color: "red", marginBottom: "8px" }}>
+          {error}
+        </div>
+      )}
+
       <label>Rating</label>
-      <select value={rating} onChange={(e) => setRating(e.target.value)}>
-        {[5, 4, 3, 2, 1].map((n) => (
-          <option key={n} value={n}>{n} Star{n > 1 && "s"}</option>
+      <select
+        value={rating}
+        onChange={(e) => setRating(Number(e.target.value))}
+        style={{ display: "block", marginBottom: "10px" }}
+      >
+        {[5, 4, 3, 2, 1].map((r) => (
+          <option key={r} value={r}>
+            {r} Star{r > 1 && "s"}
+          </option>
         ))}
       </select>
 
@@ -46,7 +78,9 @@ export default function AddReview({ productId, token, onSuccess }) {
       <textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
+        required
         rows={4}
+        style={{ width: "100%", marginBottom: "10px" }}
       />
 
       <button disabled={loading}>
