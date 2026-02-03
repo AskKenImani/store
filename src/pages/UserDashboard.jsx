@@ -71,6 +71,16 @@ export default function UserDashboard() {
     navigate("/checkout");
   };
 
+  // Product Purchased
+  const hasPurchasedProduct = (productId) => {
+  return orders.some(
+    (o) =>
+      o.paymentStatus === "completed" &&
+      o.products?.some((p) => p.product?._id === productId)
+  );
+};
+
+
   return (
     <div className={styles.wrap}>
       <h1>Welcome back, {user?.name} 👋</h1>
@@ -86,6 +96,7 @@ export default function UserDashboard() {
           {products.map((p) => (
             <div key={p._id} style={{ width: "220px" }}>
               <ProductCard product={p} />
+
               <button
                 style={{
                   marginTop: "5px",
@@ -100,6 +111,24 @@ export default function UserDashboard() {
               >
                 Add
               </button>
+
+              {hasPurchasedProduct(p._id) && (
+                <button
+                  style={{
+                    marginTop: "5px",
+                    width: "100%",
+                    padding: "6px",
+                    borderRadius: "6px",
+                    border: "1px solid #10b981",
+                    background: "#ecfdf5",
+                    color: "#065f46",
+                  }}
+                  onClick={() => navigate(`/product/${p._id}?review=1`)}
+                >
+                  Write a Review
+                </button>
+              )}
+
             </div>
           ))}
         </div>
