@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
 import styles from "./UserDashboard.module.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const API = process.env.REACT_APP_API_URL;
 const ONE_HOUR = 1 * 60 * 60 * 1000;
@@ -15,7 +15,9 @@ export default function UserDashboard() {
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
+
   const navigate = useNavigate();
+  const { search } = useLocation();
 
   // Fetch orders
   useEffect(() => {
@@ -27,7 +29,7 @@ export default function UserDashboard() {
       })
       .then((res) => setOrders(res.data.orders || []))
       .catch(console.error);
-  }, [token, window.location.search]);
+  }, [token, search]);
 
   // Fetch products
   useEffect(() => {
@@ -56,7 +58,6 @@ export default function UserDashboard() {
 
   // Continue payment
   const continuePayment = (order) => {
-    // Optional: rehydrate cart from order products
     if (order.products?.length) {
       const items = order.products.map((p) => ({
         _id: p.product._id,
@@ -77,7 +78,9 @@ export default function UserDashboard() {
       {/* PRODUCTS */}
       <div className={styles.card}>
         <h3>Featured Products</h3>
-        {loadingProducts && <div className={styles.empty}>Loading products...</div>}
+        {loadingProducts && (
+          <div className={styles.empty}>Loading products...</div>
+        )}
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
           {products.map((p) => (
@@ -107,13 +110,19 @@ export default function UserDashboard() {
             <h4>Cart Summary</h4>
             {cart.map((item) => (
               <div key={item._id} className={styles.cartRow}>
-                <span>{item.name} × {item.qty}</span>
-                <span>₦{(item.price * item.qty).toLocaleString()}</span>
+                <span>
+                  {item.name} × {item.qty}
+                </span>
+                <span>
+                  ₦{(item.price * item.qty).toLocaleString()}
+                </span>
               </div>
             ))}
             <strong>Total: ₦{total.toLocaleString()}</strong>
             <Link to="/checkout">
-              <button className={styles.checkoutBtn}>Go to Checkout</button>
+              <button className={styles.checkoutBtn}>
+                Go to Checkout
+              </button>
             </Link>
           </div>
         )}
@@ -122,7 +131,9 @@ export default function UserDashboard() {
       {/* ORDERS */}
       <div className={styles.card} style={{ marginTop: "20px" }}>
         <h3>My Orders</h3>
-        {!orders.length && <div className={styles.empty}>No orders yet.</div>}
+        {!orders.length && (
+          <div className={styles.empty}>No orders yet.</div>
+        )}
 
         {orders.map((o) => {
           const createdTime = o.createdAt

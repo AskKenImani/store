@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import styles from "./ProductPage.module.css";
 import axios from "axios";
@@ -16,37 +16,47 @@ export default function ProductPage() {
   const [reviews, setReviews] = useState([]);
   const [canReview, setCanReview] = useState(false);
 
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     const r = await axios.get(`${API}/reviews/${id}`);
     setReviews(r.data.reviews || []);
-  };
+  }, [id]);
 
   useEffect(() => {
-    (async () => {
-      const p = await axios.get(`${API}/products/${id}`);
-      setProduct(p.data.product);
+    const loadProductData = async () => {
+      try {
+        const p = await axios.get(`${API}/products/${id}`);
+        setProduct(p.data.product);
 
-      await loadReviews();
+        await loadReviews();
 
-      if (localStorage.getItem("auth_token")) {
-        axios
-          .get(`${API}/orders/has-bought/${id}`, {
+        const authToken = localStorage.getItem("auth_token");
+        if (authToken) {
+          const res = await axios.get(`${API}/orders/has-bought/${id}`, {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+              Authorization: `Bearer ${authToken}`,
             },
-          })
-          .then((res) => setCanReview(res.data.hasBought))
-          .catch(() => setCanReview(false));
+          });
+          setCanReview(res.data.hasBought);
+        }
+      } catch (err) {
+        console.error(err);
+        setCanReview(false);
       }
-    })();
-  }, [id, token]);
+    };
+
+    loadProductData();
+  }, [id, loadReviews]);
 
   if (!product) return <div className={styles.loading}>Loading...</div>;
 
   return (
     <div className={styles.wrap}>
       <div className={styles.grid}>
-        <img src={product.imageUrl} alt={product.name} className={styles.img} />
+        <img
+          src={product.imageUrl}
+          alt={product.name}
+          className={styles.img}
+        />
         <div className={styles.info}>
           <h1>{product.name}</h1>
           <p>{product.description}</p>
@@ -63,9 +73,6 @@ export default function ProductPage() {
       )}
 
       <h2>Reviews</h2>
-      {canReview && (
-        <AddReview productId={id} onSuccess={() => window.location.reload()} />
-      )}
 
       <div className={styles.reviews}>
         {reviews.length ? (
