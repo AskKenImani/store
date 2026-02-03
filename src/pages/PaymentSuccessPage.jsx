@@ -21,7 +21,7 @@ export default function PaymentSuccessPage() {
     const verifyPayment = async () => {
       try {
         await axios.post(`${API}/payments/verify`, { reference });
-        clearCart(); // ✅ empty cart after success
+        // clearCart(); // ✅ empty cart after success
         navigate("/user-dashboard?paid=1");
       } catch (err) {
         console.error("Verification failed:", err);
