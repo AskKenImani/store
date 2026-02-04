@@ -15,4 +15,10 @@
 .del {
   background: #ef4444; color: #fff; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer;
 }
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
 @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }

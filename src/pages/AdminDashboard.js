@@ -145,61 +145,69 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* ORDERS */}
-      <h3>Orders</h3>
-      {orders.map((o) => {
-        const isPending = o.paymentStatus === "pending";
-        return (
-          <div key={o._id} className={styles.itemRow}>
-            <div>₦{o.totalAmount.toLocaleString()}</div>
-            <div>Status: {o.paymentStatus}</div>
-            <div>User: {o.user?.email}</div>
+      <div className={styles.container}>
+        {/* ORDERS */}
+        <div>
+          <h3>Orders</h3>
+          {orders.map((o) => {
+            const isPending = o.paymentStatus === "pending";
+            return (
+              <div key={o._id} className={styles.itemRow}>
+                <div>₦{o.totalAmount.toLocaleString()}</div>
+                <div>Status: {o.paymentStatus}</div>
+                <div>User: {o.user?.email}</div>
 
-            {isPending && (
-              <button onClick={() => resolveOrder(o._id)}>
-                Resolve
+                {isPending && (
+                  <button onClick={() => resolveOrder(o._id)}>
+                    Resolve
+                  </button>
+                )}
+
+                <button onClick={() => deleteOrder(o._id)} className={styles.del}>
+                  Delete
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* USERS */}
+        <div>
+          <h3>Users</h3>
+          {users.map((u) => (
+            <div key={u._id} className={styles.itemRow}>
+              <div>{u.email}</div>
+              <select
+                value={u.role}
+                onChange={(e) => changeRole(u._id, e.target.value)}
+              >
+                <option value="user">User</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+              </select>
+              <button onClick={() => deleteUser(u._id)} className={styles.del}>
+                Delete
               </button>
-            )}
-
-            <button onClick={() => deleteOrder(o._id)} className={styles.del}>
-              Delete
-            </button>
-          </div>
-        );
-      })}
-
-      {/* USERS */}
-      <h3>Users</h3>
-      {users.map((u) => (
-        <div key={u._id} className={styles.itemRow}>
-          <div>{u.email}</div>
-          <select
-            value={u.role}
-            onChange={(e) => changeRole(u._id, e.target.value)}
-          >
-            <option value="user">User</option>
-            <option value="manager">Manager</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button onClick={() => deleteUser(u._id)} className={styles.del}>
-            Delete
-          </button>
+            </div>
+          ))}
         </div>
-      ))}
 
-      <h3>Reviews</h3>
-      {reviews.map((r) => (
-        <div key={r._id} className={styles.itemRow}>
-          <div>
-            <strong>{r.user?.name}</strong> → {r.product?.name}
-          </div>
-          <div>{r.rating} ★</div>
-          <div>{r.comment}</div>
-          <button onClick={() => deleteReview(r._id)} className={styles.del}>
-            Delete
-          </button>
+        <div>
+          <h3>Reviews</h3>
+          {reviews.map((r) => (
+            <div key={r._id} className={styles.itemRow}>
+              <div>
+                <strong>{r.user?.name}</strong> → {r.product?.name}
+              </div>
+              <div>{r.rating} ★</div>
+              <div>{r.comment}</div>
+              <button onClick={() => deleteReview(r._id)} className={styles.del}>
+                Delete
+              </button>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
       
     </div>
   );
