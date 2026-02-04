@@ -14,13 +14,18 @@ export default function ProductPage() {
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
 
   const loadReviews = useCallback(async () => {
     try {
+      setLoadingReviews(true);
       const res = await axios.get(`${API}/reviews/${id}`);
-      setReviews(res.data || []); 
+      setReviews(res.data.reviews || []); 
     } catch (err) {
       console.error("Failed to load reviews", err);
+      setReviews([]);
+    } finally {
+      setLoadingReviews(false);
     }
   }, [id]);
 
@@ -44,6 +49,7 @@ export default function ProductPage() {
 
   return (
     <div className={styles.wrap}>
+      {/* PRODUCT */}
       <div className={styles.grid}>
         <img
           src={product.imageUrl}
@@ -58,7 +64,7 @@ export default function ProductPage() {
         </div>
       </div>
 
-      {/* ✅ REVIEW FORM (backend enforces purchase check) */}
+      {/* REVIEW FORM */}
       {token && (
         <AddReview
           productId={id}
@@ -67,10 +73,13 @@ export default function ProductPage() {
         />
       )}
 
+      {/* REVIEWS */}
       <h2>Reviews</h2>
 
       <div className={styles.reviews}>
-        {reviews.length ? (
+        {loadingReviews ? (
+          <div>Loading reviews…</div>
+        ) : reviews.length ? (
           reviews.map((rv) => (
             <ReviewCard key={rv._id} review={rv} />
           ))
